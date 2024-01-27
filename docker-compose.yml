@@ -1,0 +1,63 @@
+version: '3'
+
+services:
+  # Cloudflared is the daemon that runs in your own server and proxies traffic to your local network.
+  # Create a tunnel from Cloudflare Dashboard to acquire the token.
+  tunnel:
+    image: cloudflare/cloudflared
+    command: tunnel --no-autoupdate run
+    env_file: # Create the .env file from .env.example
+      - .env
+    depends_on:
+      - proxy
+  proxy:
+    image: traefik:v2.11
+    expose:
+      - 80
+    ports:
+      - 8080:8080
+    volumes:
+      - /run/user/1000/docker.sock:/var/run/docker.sock
+      - ./traefik/traefik.yml:/etc/traefik/traefik.yml
+  whoami-1:
+    image: traefik/whoami:v1.10
+    expose:
+      - 4000
+    environment:
+      - WHOAMI_PORT_NUMBER=4000
+      - WHOAMI_NAME=whoami-first
+    labels:
+      - traefik.enable=true
+      - traefik.http.services.whoami.loadbalancer.server.port=4000
+      # TODO: Edit your domain name here:
+      - traefik.http.routers.whoami.rule=Host(`foo.bar`) && PathPrefix(`/whoami`)
+      - traefik.http.routers.whoami.entrypoints=web
+      - traefik.http.routers.whoami.service=whoami
+  whoami-2:
+    image: traefik/whoami:v1.10
+    expose:
+      - 4000
+    environment:
+      - WHOAMI_PORT_NUMBER=4000
+      - WHOAMI_NAME=whoami-first
+    labels:
+      - traefik.enable=true
+      - traefik.http.services.whoami.loadbalancer.server.port=4000
+      # TODO: Edit your domain name here:
+      - traefik.http.routers.whoami.rule=Host(`foo.bar`) && PathPrefix(`/whoami`)
+      - traefik.http.routers.whoami.entrypoints=web
+      - traefik.http.routers.whoami.service=whoami
+  whoami-3:
+    image: traefik/whoami:v1.10
+    expose:
+      - 4000
+    environment:
+      - WHOAMI_PORT_NUMBER=4000
+      - WHOAMI_NAME=whoami-first
+    labels:
+      - traefik.enable=true
+      - traefik.http.services.whoami.loadbalancer.server.port=4000
+      # TODO: Edit your domain name here:
+      - traefik.http.routers.whoami.rule=Host(`foo.bar`) && PathPrefix(`/whoami`)
+      - traefik.http.routers.whoami.entrypoints=web
+      - traefik.http.routers.whoami.service=whoami
